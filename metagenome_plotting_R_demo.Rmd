@@ -1,0 +1,88 @@
+---
+title: "Tutorial on generating MG-Rast metagenome plots with R"
+author: "Hannah Woo (University of Tennessee)"
+date: "January 15, 2016"
+output: html_document
+---
+
+This tutorial utilized the Global Ocean Survey dataset that is publicly available online at MG-RAST.  Download the Subsystems annotation of the GOS dataset.
+
+##Reading in the data:
+First, we read in the subsystems annotation of the GOS dataset from MG-RAST as a tab deliminted file.
+We will use classes string to parse the category names and just the abundance information.  Other columns such as E-value will be ignored for now.  
+
+Then, we will turn all abundances into a proportions of total genes for each genome.
+
+As a sanity check, we find that annotated genes proportions for each metagenome sums to 1 as expected.
+
+```{r}
+library(plyr) #for the ddply function
+
+#read just the category and abundance data of the Global Ocean Survey data.
+data_subsystems_gos<-read.delim(
+  "/Users/hannahwoo/Downloads/table_subsystemsMGRAST_GOS.tsv", 
+  header = TRUE, 
+  sep = "\t", 
+  quote = "", 
+  dec = ".", 
+  colClasses=c("factor","factor","factor","factor","factor","integer","NULL","NULL","NULL","NULL","NULL"))
+  
+#transform original data into proportions for plotting
+data_subsystems_gos<-ddply(
+  data_subsystems_gos, 
+  c("metagenome"), 
+  transform, 
+  relative_abundance_of_all_annotated_genes = (abundance / sum(abundance)))
+
+#sanity check
+tapply(data_subsystems_gos$relative_abundance_of_all_annotated_genes,data_subsystems_gos$metagenome, sum)
+```
+##Reading in the metadata:
+
+Read in metadata and combine with abundance data
+```{r}
+#Read in the metadata for the GOS metagenomes
+metadata_gos<-read.delim("/Users/hannahwoo/Downloads/metadata_MGRAST_GOS.tsv", header = TRUE, sep = "\t", quote = "",
+           dec = ".", colClasses=c("factor","factor","NULL","NULL","factor","factor","factor","factor","factor","NULL","factor","factor"))
+
+#need to make sure these are characters for the following functions to work properly
+mgrastid=as.character(metadata_gos$MG.RAST.ID)
+location=as.character(metadata_gos$Location)
+
+#add a new columns the abundance dataframe so that they can be identified by location 
+data_subsystems_gos$metagenomelocation<-mapvalues(data_subsystems_gos$metagenome, from =mgrastid, to = location)   
+
+#find how many pathways have information to plot
+proportionlevel1_pathwaynames<-levels(unique(factor(data_subsystems_gos$level.1))) 
+
+```
+##Define plotting functions:
+Define two functions so that annotation can be plotted by the most broad category and by their environment
+```{r}
+#plot all the functions of each level 1 category
+proportionplotting_level1 <- function(matrixname,i) {
+  require(ggplot2); 
+  outputplot=ggplot(matrixname[matrixname$level.1==i,],aes(level.2,relative_abundance_of_all_annotated_genes)) + geom_point(colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black")) + coord_flip() + ggtitle(paste(i,"level.1")); 
+  return(outputplot)
+  }
+
+proportionplotting_level1_byenvironment <- function(matrixname,environment) {
+  require(ggplot2); 
+  outputplot=ggplot(matrixname[which(matrixname$metagenomelocation==environment),],aes(level.1,relative_abundance_of_all_annotated_genes), fill=metagenometype) + geom_bar(stat="identity", position="dodge", aes(fill=metagenomelocation), colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black"),legend.position ="top") + scale_fill_manual(values=c("#FFFFFF","#a9a9a9")) + coord_flip() + ggtitle(paste(environment,"level.1")); 
+  return(outputplot)
+  }
+```
+##Output to PDF:
+Create a pdf with all the plots
+```{r, eval=FALSE}
+library(ggplot2)
+
+pdf(file="/Users/hannahwoo/Google_Drive2/NSF_REU_Summer2015/Manuscript_figures/Testing_function_plots/bypathway.pdf", width=12) 
+  lapply(X= proportionlevel1_pathwaynames, FUN= proportionplotting_level1, matrixname=data_subsystems_gos)
+  dev.off()
+  
+pdf(file="/Users/hannahwoo/Google_Drive2/NSF_REU_Summer2015/Manuscript_figures/Testing_function_plots/bypathway_environment.pdf", width=12) 
+  lapply(X = location, FUN = proportionplotting_level1_byenvironment, matrixname=data_subsystems_gos)
+
+  dev.off()
+```
