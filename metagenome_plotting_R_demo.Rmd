@@ -2,7 +2,7 @@
 title: "Tutorial on generating MG-Rast metagenome plots with R"
 author: "Hannah Woo (University of Tennessee)"
 date: "January 15, 2016"
-output: html_document
+output: md_document
 ---
 
 This tutorial utilized the Global Ocean Survey dataset that is publicly available online at MG-RAST.  We will utilize the SEED Subsystems annotation of the GOS dataset. Metadata was also available publicly from the MG-RAST site.  Both files are included.
