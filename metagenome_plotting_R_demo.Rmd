@@ -76,7 +76,7 @@ proportionlevel1_pathwaynames<-levels(unique(factor(globalocean_data_metadata$le
 
 ```{r, echo=FALSE}
   require(ggplot2)
-  ggplot(data_subsystems_gos[data_subsystems_gos$level.1==proportionlevel1_pathwaynames[1],],aes(level.2,relative_abundance_of_all_annotated_genes)) + geom_point(colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black")) + coord_flip() + ggtitle(paste(proportionlevel1_pathwaynames[1],"level.1"))
+  ggplot(globalocean_data_metadata[globalocean_data_metadata$level.1==proportionlevel1_pathwaynames[1],],aes(level.2,relative_abundance_of_all_annotated_genes)) + geom_point(colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black")) + coord_flip() + ggtitle(paste(proportionlevel1_pathwaynames[1],"level.1"))
 ```
 ##Define plotting functions:
 Define two functions so that annotation can be plotted by the most broad category and by their environment
