@@ -5,7 +5,7 @@ date: "January 15, 2016"
 output: html_document
 ---
 
-This tutorial utilized the Global Ocean Survey dataset that is publicly available online at MG-RAST.  Download the Subsystems annotation of the GOS dataset.
+This tutorial utilized the Global Ocean Survey dataset that is publicly available online at MG-RAST.  We will utilize the SEED Subsystems annotation of the GOS dataset. Metadata was also available publicly from the MG-RAST site.  Both files are included.
 
 ##Reading in the data:
 First, we read in the subsystems annotation of the GOS dataset from MG-RAST as a tab deliminted file.
@@ -20,7 +20,7 @@ library(plyr) #for the ddply function
 
 #read just the category and abundance data of the Global Ocean Survey data.
 data_subsystems_gos<-read.delim(
-  "/Users/hannahwoo/Downloads/table_subsystemsMGRAST_GOS.tsv", 
+  "data/table_subsystemsMGRAST_GOS.tsv", 
   header = TRUE, 
   sep = "\t", 
   quote = "", 
@@ -42,7 +42,7 @@ tapply(data_subsystems_gos$relative_abundance_of_all_annotated_genes,data_subsys
 Read in metadata and combine with abundance data
 ```{r}
 #Read in the metadata for the GOS metagenomes
-metadata_gos<-read.delim("/Users/hannahwoo/Downloads/metadata_MGRAST_GOS.tsv", header = TRUE, sep = "\t", quote = "",
+metadata_gos<-read.delim("data/metadata_MGRAST_GOS.tsv", header = TRUE, sep = "\t", quote = "",
            dec = ".", colClasses=c("factor","factor","NULL","NULL","factor","factor","factor","factor","factor","NULL","factor","factor"))
 
 #need to make sure these are characters for the following functions to work properly
@@ -55,6 +55,11 @@ data_subsystems_gos$metagenomelocation<-mapvalues(data_subsystems_gos$metagenome
 #find how many pathways have information to plot
 proportionlevel1_pathwaynames<-levels(unique(factor(data_subsystems_gos$level.1))) 
 
+```
+
+```{r, echo=FALSE}
+  require(ggplot2)
+  ggplot(data_subsystems_gos[data_subsystems_gos$level.1==proportionlevel1_pathwaynames[1],],aes(level.2,relative_abundance_of_all_annotated_genes)) + geom_point(colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black")) + coord_flip() + ggtitle(paste(proportionlevel1_pathwaynames[1],"level.1"))
 ```
 ##Define plotting functions:
 Define two functions so that annotation can be plotted by the most broad category and by their environment
@@ -77,11 +82,11 @@ Create a pdf with all the plots
 ```{r, eval=FALSE}
 library(ggplot2)
 
-pdf(file="/Users/hannahwoo/Google_Drive2/NSF_REU_Summer2015/Manuscript_figures/Testing_function_plots/bypathway.pdf", width=12) 
+pdf(file="bypathway.pdf", width=12) 
   lapply(X= proportionlevel1_pathwaynames, FUN= proportionplotting_level1, matrixname=data_subsystems_gos)
   dev.off()
   
-pdf(file="/Users/hannahwoo/Google_Drive2/NSF_REU_Summer2015/Manuscript_figures/Testing_function_plots/bypathway_environment.pdf", width=12) 
+pdf(file="bypathway_environment.pdf", width=12) 
   lapply(X = location, FUN = proportionplotting_level1_byenvironment, matrixname=data_subsystems_gos)
 
   dev.off()
