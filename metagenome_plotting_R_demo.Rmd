@@ -4,23 +4,25 @@ author: "Hannah Woo (University of Tennessee)"
 date: "January 15, 2016"
 output: md_document
 ---
-
-This tutorial utilized the Global Ocean Survey dataset that is publicly available online at MG-RAST.  We will utilize the SEED Subsystems annotation of the GOS dataset. Metadata was also available publicly from the MG-RAST site.  Both files are included.
+##Short Description
+This Rmarkdown tutorial utilized the Global Ocean Survey dataset that is publicly available online at MG-RAST.  We will utilize the SEED Subsystems annotation of the GOS dataset. Metadata was also available publicly from the MG-RAST site.  Both files are included in the source under the data folder.
 
 ##Reading in the data:
 First, we read in the subsystems annotation of the GOS dataset from MG-RAST as a tab deliminted file.
-We will use classes string to parse the category names and just the abundance information.  Other columns such as E-value will be ignored for now.  
 
-Then, we will turn all abundances into a proportions of total genes for each genome.
+We will plot category vs abundance. Other columns in the annotation file such as E-value and number of hits will be ignored for now.
+
+Abundances will be converted into a proportions of total genes for each metagenome.
 
 As a sanity check, we find that annotated genes proportions for each metagenome sums to 1 as expected.
 
 ```{r}
-library(plyr) #for the ddply function
+library(plyr) #required package
 
-#read just the category and abundance data of the Global Ocean Survey data.
+#use this function to parse just the categories and abundance data of the Global Ocean Survey data.
+data_readin_mgrast<-function(filename){
 data_subsystems_gos<-read.delim(
-  "data/table_subsystemsMGRAST_GOS.tsv", 
+  filename, 
   header = TRUE, 
   sep = "\t", 
   quote = "", 
@@ -33,29 +35,41 @@ data_subsystems_gos<-ddply(
   c("metagenome"), 
   transform, 
   relative_abundance_of_all_annotated_genes = (abundance / sum(abundance)))
+}
+
+data_GOS<-data_readin_mgrast('data/table_subsystemsMGRAST_GOS.tsv')
 
 #sanity check
-tapply(data_subsystems_gos$relative_abundance_of_all_annotated_genes,data_subsystems_gos$metagenome, sum)
+tapply(data_GOS$relative_abundance_of_all_annotated_genes,data_GOS$metagenome, sum)
 ```
 ##Reading in the metadata:
 
-Read in metadata and combine with abundance data
+Read in metadata and combine with abundance data.  This example metadata has 
 ```{r}
 #Read in the metadata for the GOS metagenomes
-metadata_gos<-read.delim("data/metadata_MGRAST_GOS.tsv", header = TRUE, sep = "\t", quote = "",
-           dec = ".", colClasses=c("factor","factor","NULL","NULL","factor","factor","factor","factor","factor","NULL","factor","factor"))
+
+metadata_readin_mgrast<-function(datamatrixname,filename2, metadata.col){
+metadata_gos<-read.delim('data/metadata_MGRAST_GOS.tsv', header = TRUE, sep = "\t", quote = "",
+           dec = ".")
 
 #need to make sure these are characters for the following functions to work properly
 mgrastid=as.character(metadata_gos$MG.RAST.ID)
-location=as.character(metadata_gos$Location)
+#metadata.col<-"Location"
+location=as.character(metadata_gos[[metadata.col]])
 
 #add a new columns the abundance dataframe so that they can be identified by location 
-data_subsystems_gos$metagenomelocation<-mapvalues(data_subsystems_gos$metagenome, from =mgrastid, to = location)   
+datamatrixname$metagenome_metadatacol<-mapvalues(datamatrixname$metagenome, from =mgrastid, to = location)   
+return(datamatrixname)
+}
+
+globalocean_data_metadata<-metadata_readin_mgrast(datamatrixname = data_GOS, filename2 = 'data/metadata_MGRAST_GOS.tsv', metadata.col = "Location")
+
 
 #find how many pathways have information to plot
-proportionlevel1_pathwaynames<-levels(unique(factor(data_subsystems_gos$level.1))) 
+proportionlevel1_pathwaynames<-levels(unique(factor(globalocean_data_metadata$level.1))) 
 
 ```
+
 
 ```{r, echo=FALSE}
   require(ggplot2)
