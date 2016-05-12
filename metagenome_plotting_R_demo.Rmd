@@ -4,6 +4,9 @@ author: "Hannah Woo (University of Tennessee)"
 date: "January 15, 2016"
 output: md_document
 ---
+
+JL
+
 ##Short Description
 This Rmarkdown tutorial utilized the Global Ocean Survey dataset that is publicly available online at MG-RAST.  We will utilize the SEED Subsystems annotation of the GOS dataset. Metadata was also available publicly from the MG-RAST site.  Both files are included in the source under the data folder.
 
