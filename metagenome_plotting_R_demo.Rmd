@@ -2,7 +2,7 @@
 title: "A beginner's tutorial on generating MG-Rast metagenome plots with R"
 author: "Hannah Woo (University of Tennessee)"
 date: "May 12, 2016"
-output: md_document
+output: github_document
 ---
 Hello World! This tutorial is meant to give new R users a short introduction in data frame manipulation and plotting using ggplot2.  Try your best to follow along.  Refer back to the docmentation often by going over to the Help tab in Rstudio. Good luck! -HW
 
