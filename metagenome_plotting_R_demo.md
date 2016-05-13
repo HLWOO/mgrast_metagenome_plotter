@@ -1,21 +1,21 @@
-A beginner's tutorial on generating MG-Rast metagenome plots with R
+For beginners in R: A tutorial on generating MG-Rast metagenome plots
 ================
 Hannah Woo (University of Tennessee)
 May 12, 2016
 
-Hello World! This tutorial is meant to give new R users a short introduction in data frame manipulation and plotting using ggplot2. Try your best to follow along. Refer back to the docmentation often by going over to the Help tab in Rstudio. Good luck! -HW
+*This tutorial is meant to give new R users a short introduction in data frame manipulation and plotting using ggplot2.*
 
 Description
 -----------
 
-MG-RAST (<http://metagenomics.anl.gov>) is a widely used annotation pipeline for next-generation sequencing data. Annotation results tend to be very large tables of function or taxa abundances. With thousands of functions or taxa to consider, one set of metagenomes can have an overwhelming amount of information. This Rmarkdown tutorial will describe how to create a series of plots from abundance tables as a initial visualization. The goal is to view the dataset quickly and conveniently in one pdf. Results could be included as supplementary material for publication.
+MG-RAST (<http://metagenomics.anl.gov>) is a widely used annotation pipeline for next-generation sequencing data. Annotation results tend to be very large tables of function or taxa abundances. With thousands of functions or taxa to consider, a set of metagenomes can have an overwhelming amount of information. This Rmarkdown tutorial will describe how to create a series of plots from abundance tables as an initial visualization. The goal is to view the dataset quickly and conveniently in one pdf. Results could be included as supplementary material for publication.
 
 Functional Data
 ---------------
 
-This tutorial uses the publicly available Global Ocean Survey (GOS) dataset (<http://www.jcvi.org/cms/research/projects/gos/overview>). We will utilize the SEED Subsystems database annotation-- a curated hierarchical categorization of function with 3 nested levels. There are 28 different functional groupings at Level 1. Level 2 and 3 functional groupings are nested within each other and become more numerous and specific. At the finest level of resolution, we have 8343 different functions.
+This tutorial uses the publicly available Global Ocean Survey (GOS) dataset (<http://www.jcvi.org/cms/research/projects/gos/overview>). Many different types of annotations are available on MG-RAST but we will focus on just the SEED Subsystems database annotation-- a curated hierarchical categorization of function with 3 nested levels.
 
-Below is the overview of the data object. The MG-Rast output always has abundance information for multiple metagenome as rows. As a result, the data table is typically very long with few columns. For this tutorial, we will only consider the categories and abundance columns. We will ignore some of the other ones like avg.evalue, avg.identity, avg align length, hits. This overview from the 'str' command is helpful because the dimensions of the data frame, the data types of the columns, and some of the histogram information for the factors.
+Below is the overview of the data object given by **str**. There are 28 different functional groupings at Level 1. Level 2 and 3 functional groupings are nested within each other and become more numerous and specific. At the finest level of resolution, we have 8343 different functions. MG-Rast provides abundance information for multiple metagenome as rows. As a result, the data table is typically very long with just a few columns. For this tutorial, we will consider the categories and abundance columns. We will ignore some of the other ones like avg.evalue, avg.identity, avg align length, hits. This overview is helpful because the dimensions of the data frame, the data types of the columns, and some of the histogram information for the factors.
 
 ``` r
 data_subsystems_gos<-read.delim(
@@ -49,26 +49,38 @@ MG-RAST has metadata available for all their metagenomes. The level of detail wi
 
 Both the abundance table and metadata files are included in the source under the 'data' folder.
 
-    ## 'data.frame':    88 obs. of  12 variables:
-    ##  $ MG.RAST.ID     : num  4441167 4441662 4441576 4441148 4441126 ...
-    ##  $ Metagenome.Name: Factor w/ 85 levels "GS000a Shotgun - Open Ocean - Sargasso Sea - Sargasso Station 11 - Bermuda",..: 59 40 7 76 51 61 30 85 60 4 ...
-    ##  $ bp.Count       : Factor w/ 81 levels "100,097,831",..: 45 40 22 49 67 68 34 6 81 35 ...
-    ##  $ Sequence.Count : Factor w/ 80 levels "101,558","102,708",..: 41 37 26 45 63 67 32 6 78 33 ...
-    ##  $ Biome          : Factor w/ 2 levels "freshwater habitat",..: 2 2 2 2 2 2 1 2 2 2 ...
-    ##  $ Feature        : Factor w/ 2 levels "freshwater habitat",..: 2 2 2 2 2 2 1 2 2 2 ...
-    ##  $ Material       : Factor w/ 2 levels "freshwater habitat",..: 2 2 2 2 2 2 1 2 2 2 ...
-    ##  $ Location       : Factor w/ 56 levels "Bay of Fundy, Nova Scotia",..: 44 21 49 34 50 47 36 11 45 49 ...
-    ##  $ Country        : Factor w/ 14 levels " ","Australia",..: 7 6 3 12 1 7 11 14 7 3 ...
-    ##  $ Coordinates    : Factor w/ 75 levels "-.02083, -91.1978",..: 15 41 54 25 29 13 75 58 14 53 ...
-    ##  $ Sequence.Type  : Factor w/ 2 levels "MT","WGS": 2 2 2 2 2 2 2 2 2 1 ...
+``` r
+metadata<-read.delim(
+  'data/metadata_MGRAST_GOS.tsv', 
+  header = TRUE, 
+  sep = "\t", 
+  quote = "", 
+  dec = ".", 
+  )
+
+str(metadata)
+```
+
+    ## 'data.frame':    78 obs. of  12 variables:
+    ##  $ MG.RAST.ID     : num  4441662 4441576 4441148 4441126 4441121 ...
+    ##  $ Metagenome.Name: Factor w/ 75 levels "GS000a Shotgun - Open Ocean - Sargasso Sea - Sargasso Station 11 - Bermuda",..: 34 6 66 43 52 25 75 51 3 71 ...
+    ##  $ bp.Count       : Factor w/ 75 levels "100,097,831",..: 37 21 44 62 63 32 6 75 33 41 ...
+    ##  $ Sequence.Count : Factor w/ 74 levels "101,558","102,708",..: 34 25 40 58 62 30 6 72 31 39 ...
+    ##  $ Biome          : Factor w/ 2 levels "freshwater habitat",..: 2 2 2 2 2 1 2 2 2 2 ...
+    ##  $ Feature        : Factor w/ 2 levels "freshwater habitat",..: 2 2 2 2 2 1 2 2 2 2 ...
+    ##  $ Material       : Factor w/ 2 levels "freshwater habitat",..: 2 2 2 2 2 1 2 2 2 2 ...
+    ##  $ Location       : Factor w/ 52 levels "Bay of Fundy, Nova Scotia",..: 20 47 32 48 45 34 11 43 47 30 ...
+    ##  $ Country        : Factor w/ 13 levels " ","Australia",..: 6 3 11 1 7 10 13 7 3 1 ...
+    ##  $ Coordinates    : Factor w/ 68 levels "-.02083, -91.1978",..: 37 48 22 25 11 68 52 12 47 19 ...
+    ##  $ Sequence.Type  : Factor w/ 2 levels "MT","WGS": 2 2 2 2 2 2 2 2 1 2 ...
     ##  $ Sequence.Method: Factor w/ 1 level "other": 1 1 1 1 1 1 1 1 1 1 ...
 
 Reading in the abundance data
 -----------------------------
 
-I've created a function to read in the subsystems annotation data as a tab delimited file. The function 'data\_readin\_mgrast' just needs to know path to the data file in quotes. Having this script as a function will make life easier in the long-run. If we wanted to change the data file, we can change the path of the file in the function call and modify the output quickly.
+I've created a function to read in the subsystems annotation data as a tab delimited file. The function **data\_readin\_mgrast** just needs to know path to the data file in quotes. Having this script as a function will make life easier in the long-run. If we wanted to change the data file, we can change the path of the file in the function call and modify the output quickly.
 
-The role of the colClasses may not be obvious. By using colclasses we are explicitly assigning data types to each column rather than letting R guess. Common datatypes are factors, integers and numbers. I can use 'NULL' to ignore some of the columns and speed up the parsing. The second part of the function converts abundance into a proportions of total genes for each metagenome.
+The role of the **colClasses** may not be obvious. By using **colClasses** we are explicitly assigning data types to each column. Common datatypes are factors, integers and numbers. I can use 'NULL' to ignore some of the columns and speed up the parsing. The second part of the function converts abundance into a proportions of total genes for each metagenome.
 
 ``` r
 data_readin_mgrast<-function(filename){
@@ -95,7 +107,7 @@ Reading in the metadata
 
 Read in metadata text file. Pick one metadata category to plot against the genes' relative abundances. Add that category onto the large data table as a new column. One of the most informative features in this example is the sampling location for each metagenome.
 
-This function is more complicated. We must specify 3 pieces of information for this function: 1) the name of the data object from the data\_readin\_mgrast function, 2) the path to the metadata file, and 3) the name of the metadata column we want to plot.
+This function is more complicated. We must specify 3 pieces of information for this function: 1) the name of the data object from the **data\_readin\_mgrast** function, 2) the path to the metadata file, and 3) the name of the metadata column we want to plot.
 
 ``` r
 #Read in the metadata for the GOS metagenomes
@@ -116,7 +128,7 @@ return(datamatrixname)
 Extract the names of the level 1 categories
 -------------------------------------------
 
-I decided to make a function to extract the names of the level 1 functional categories instead of hard-coding them. 'Hard-coding' in this scenario would be using a list of names. This can lead to unpredictable results in the future if the SEED Subsystems groupings ever change.
+I decided to make a function to extract the names of the level 1 functional categories instead of **hard-coding** them. 'Hard-coding' in this scenario would be using a list of names. This can lead to unpredictable results in the future if the SEED Subsystems groupings ever change.
 
 Plot the relative gene abundances for a user-specified level 1 category
 -----------------------------------------------------------------------
@@ -154,15 +166,25 @@ data_GOS<-data_readin_mgrast('data/table_subsystemsMGRAST_GOS.tsv')
 globalocean_data_metadata<-metadata_readin_mgrast(datamatrixname = data_GOS, filename2 = 'data/metadata_MGRAST_GOS.tsv', metadata.col = "Location")
 proportionlevel1_pathwaynames<-level1_extraction(globalocean_data_metadata)
 proportionplotting_level1(globalocean_data_metadata,'Amino Acids and Derivatives')
+```
+
+![](metagenome_plotting_R_demo_files/figure-markdown_github/unnamed-chunk-8-1.png)<!-- -->
+
+``` r
 proportionplotting_level1_bymetadata(globalocean_data_metadata, 'Polynesia Archipelagos - Moorea, Cooks Bay')
 ```
+
+![](metagenome_plotting_R_demo_files/figure-markdown_github/unnamed-chunk-8-2.png)<!-- -->
 
 Create PDF of multiple plots
 ----------------------------
 
-To exhaustively plot your metagenome dataset, use the 'lapply' function. We are looping this function over all the level1 pathways in our data set. Then we are looping over all the locations from our data set. Everything will be in pdfs in our working directory.
+To exhaustively plot your metagenome dataset, use the **lapply** function. We are looping this function over all the level1 pathways in our data set. Then we are looping over all the locations from our data set. Everything will be in pdfs in our working directory.
+
+In this demo, I have turned off the evaluation of this last chunk. The plotting can take a few minutes. To turn this chunk of code back "on", change eval=FALSE to eval=TRUE.
 
 ``` r
+getwd()
 pdf(file="bypathway.pdf", width=12) 
   lapply(X= proportionlevel1_pathwaynames, FUN= proportionplotting_level1, matrixname=data_subsystems_gos)
   dev.off()
@@ -172,3 +194,5 @@ pdf(file="bypathway_environment.pdf", width=12)
 
   dev.off()
 ```
+
+FIN. Please let me know if you have questions or feedback. I'd be glad to hear from you. <hwoo@utk.edu>

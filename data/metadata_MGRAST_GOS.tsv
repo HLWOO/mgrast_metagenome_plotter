@@ -1,5 +1,4 @@
 MG-RAST ID	Metagenome Name	bp Count	Sequence Count	Biome	Feature	Material	Location	Country	Coordinates	Sequence Type	Sequence Method
-4441167.3	GS048b Shotgun - Coral Reef - Polynesia Archipelagos - Moorea, Cooks Bay - Fr. Polynesia	50,969,448	47,692	marine habitat	marine habitat	marine habitat	Polynesia Archipelagos - Moorea, Cooks Bay	French Polynesia	-17.47583, -149.812	WGS	other
 4441662.3	GS030 Shotgun - Warm Seep - Galapagos Islands - Warm seep, Roca Redonda - Ecuador	391,694,924	359,152	marine habitat	marine habitat	marine habitat	Galapagos Islands - Warm seep, Roca Redonda	Ecuador	.2722, -91.633	WGS	other
 4441576.3	GS001a Shotgun - Open Ocean - Sargasso Sea - Hydrostation S - Bermuda	143,316,448	142,352	marine habitat	marine habitat	marine habitat	Sargasso Sea	Bermuda	32.1667, -64.5	WGS	other
 4441148.3	GS117b Shotgun - Coastal sample - Indian Ocean - St. Anne Island, Seychelles - Seychelles	54,752,102	50,609	marine habitat	marine habitat	marine habitat	Indian Ocean - St. Anne Island, Seychelles	Seychelles	-4.6136, 55.5086	WGS	other
@@ -78,12 +77,3 @@ MG-RAST ID	Metagenome Name	bp Count	Sequence Count	Biome	Feature	Material	Locati
 4441128.3	GS043 Shotgun - Open Ocean - Tropical South Pacific - Tropical South Pacific - International	789,468	711	marine habitat	marine habitat	marine habitat	Tropical South Pacific	 	-7.6611, -120.402	WGS	other
 4441585.3	GS013 Shotgun - Coastal - North American East Coast - Off Nags Head, NC - USA	149,007,574	138,033	marine habitat	marine habitat	marine habitat	Off Nags Head, NC	United States of America	36.00389, -75.3947	WGS	other
 4441595.3	GS027 Shotgun - Coastal - Galapagos Islands - Devil's Crown, Floreana Island - Ecuador	237,326,008	222,080	marine habitat	marine habitat	marine habitat	Galapagos Islands, Devil	Ecuador	1.2161, -90.42278	WGS	other
-4441587.3	GS017 Shotgun - Open Ocean - Caribbean Sea - Yucatan Channel - Mexico	281,259,325	257,581	marine habitat	marine habitat	marine habitat	Yucatan Channel	Mexico	20.5225, -85.4136	MT	other
-4441577.3	GS001b Shotgun - Open Ocean - Sargasso Sea - Hydrostation S - Bermuda	90,955,161	90,905	marine habitat	marine habitat	marine habitat	Sargasso Sea	Bermuda	32.1667, -64.5	MT	other
-4441611.3	GS114 Shotgun - Open Ocean - Indian Ocean - 500 Miles west of the Seychelles in the Indian Ocean - International	345,285,679	348,823	marine habitat	marine habitat	marine habitat	Indian Ocean - 500 Miles west of the Seychelles in the Indian Ocean	 	-4.99028, 64.9767	WGS	other
-4441571.3	GS000a Shotgun - Open Ocean - Sargasso Sea - Sargasso Station 13 - Bermuda	658,755,696	644,551	marine habitat	marine habitat	marine habitat	Sargasso Sea	Bermuda	31.175, -64.324	WGS	other
-4441600.3	GS034 Shotgun - Coastal - Galapagos Islands - North Seamore Island - Ecuador	142,199,308	134,347	marine habitat	marine habitat	marine habitat	Galapagos Islands - North Seamore Island	Ecuador	-.3831, -90.2797	WGS	other
-4442626.3	GS030 Shotgun - Warm Seep - Galapagos Islands - Upwelling, Fernandina Island	461,671,889	436,401	marine habitat	marine habitat	marine habitat	Upwelling, Fernandina Island	Ecuador	-.30111, -91.65167	WGS	other
-4442708.3	GS004	56,922,096	52,959	marine habitat	marine habitat	marine habitat	Outside Halifax, Nova Scotia	Canada	44.1372, -63.644	WGS	other
-4442709.3	GS007	55,430,960	50,980	marine habitat	marine habitat	marine habitat	Northern Gulf of Maine	Canada	43.632, -66.8472	WGS	other
-4441597.3	GS031	461,671,889	436,401	marine habitat	marine habitat	marine habitat	Upwelling, Fernandina Island	Ecuador	0.30111, -91.65167	WGS	other
