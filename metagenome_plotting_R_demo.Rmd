@@ -1,29 +1,55 @@
 ---
-title: "Tutorial on generating MG-Rast metagenome plots with R"
+title: "A beginner's tutorial on generating MG-Rast metagenome plots with R"
 author: "Hannah Woo (University of Tennessee)"
-date: "January 15, 2016"
+date: "May 12, 2016"
 output: md_document
 ---
+Hello World! This tutorial is meant to give new R users a short introduction in data frame manipulation and plotting using ggplot2.  Try your best to follow along.  Refer back to the docmentation often by going over to the Help tab in Rstudio. Good luck! -HW
 
-JL
+##Description
+MG-RAST (http://metagenomics.anl.gov) is a widely used annotation pipeline for next-generation sequencing data. Annotation results tend to be very large tables of function or taxa abundances. With thousands of functions or taxa to consider, one set of metagenomes can have an overwhelming amount of information.  This Rmarkdown tutorial will describe how to create a series of plots from abundance tables as a initial visualization.  The goal is to view the dataset quickly and conveniently in one pdf.  Results could be included as supplementary material for publication.
 
-##Short Description
-This Rmarkdown tutorial utilized the Global Ocean Survey dataset that is publicly available online at MG-RAST.  We will utilize the SEED Subsystems annotation of the GOS dataset. Metadata was also available publicly from the MG-RAST site.  Both files are included in the source under the data folder.
+##Functional Data
+This tutorial uses the publicly available Global Ocean Survey (GOS) dataset (http://www.jcvi.org/cms/research/projects/gos/overview).  We will utilize the SEED Subsystems database annotation-- a curated hierarchical categorization of function with 3 nested levels.  There are 28 different functional groupings at Level 1.  Level 2 and 3 functional groupings are nested within each other and become more numerous and specific.  At the finest level of resolution, we have 8343 different functions.  
 
-##Reading in the data:
-First, we read in the subsystems annotation of the GOS dataset from MG-RAST as a tab deliminted file.
-
-We will plot category vs abundance. Other columns in the annotation file such as E-value and number of hits will be ignored for now.
-
-Abundances will be converted into a proportions of total genes for each metagenome.
-
-As a sanity check, we find that annotated genes proportions for each metagenome sums to 1 as expected.
+Below is the overview of the data object. The MG-Rast output always has abundance information for multiple metagenome as rows.  As a result, the data table is typically very long with few columns. For this tutorial, we will only consider the categories and abundance columns.  We will ignore some of the other ones like avg.evalue, avg.identity, avg align length, hits.  This overview from the 'str' command is helpful because the dimensions of the data frame, the data types of the columns, and some of the histogram information for the factors.  
 
 ```{r}
-library(plyr) #required package
+data_subsystems_gos<-read.delim(
+  'data/table_subsystemsMGRAST_GOS.tsv', 
+  header = TRUE, 
+  sep = "\t", 
+  quote = "", 
+  dec = ".", 
+)
 
-#use this function to parse just the categories and abundance data of the Global Ocean Survey data.
+str(data_subsystems_gos)
+```
+
+##Metadata
+MG-RAST has metadata available for all their metagenomes.  The level of detail with the metadata is specific to the person who generated the data. From the overview of the metadata object, we see columns for biome, feature, country, coordinates, etc.  There is a plethora of data to visualize. We will just use location in this tutorial.
+
+Both the abundance table and metadata files are included in the source under the 'data' folder.
+```{r, echo=FALSE}
+metadata<-read.delim(
+  'data/metadata_MGRAST_GOS.tsv', 
+  header = TRUE, 
+  sep = "\t", 
+  quote = "", 
+  dec = ".", 
+  )
+
+str(metadata)
+```
+
+##Reading in the abundance data 
+I've created a function to read in the subsystems annotation data as a tab delimited file. The function 'data_readin_mgrast' just needs to know path to the data file in quotes. Having this script as a function will make life easier in the long-run.  If we wanted to change the data file, we can change the path of the file in the function call and modify the output quickly. 
+
+The role of the colClasses may not be obvious.  By using colclasses we are explicitly assigning data types to each column rather than letting R guess. Common datatypes are factors, integers and numbers. I can use 'NULL' to ignore some of the columns and speed up the parsing.  The second part of the function converts abundance into a proportions of total genes for each metagenome. 
+
+```{r}
 data_readin_mgrast<-function(filename){
+  require(plyr)
 data_subsystems_gos<-read.delim(
   filename, 
   header = TRUE, 
@@ -39,66 +65,69 @@ data_subsystems_gos<-ddply(
   transform, 
   relative_abundance_of_all_annotated_genes = (abundance / sum(abundance)))
 }
-
-data_GOS<-data_readin_mgrast('data/table_subsystemsMGRAST_GOS.tsv')
-
-#sanity check
-tapply(data_GOS$relative_abundance_of_all_annotated_genes,data_GOS$metagenome, sum)
 ```
-##Reading in the metadata:
+##Reading in the metadata 
+Read in metadata text file.   Pick one metadata category to plot against the genes' relative abundances. Add that category onto the large data table as a new column.  One of the most informative features in this example is the sampling location for each metagenome. 
 
-Read in metadata and combine with abundance data.  This example metadata has 
+This function is more complicated.  We must specify 3 pieces of information for this function: 1)  the name of the data object from the data_readin_mgrast function, 2) the path to the metadata file, and 3) the name of the metadata column we want to plot.
 ```{r}
 #Read in the metadata for the GOS metagenomes
 
 metadata_readin_mgrast<-function(datamatrixname,filename2, metadata.col){
-metadata_gos<-read.delim('data/metadata_MGRAST_GOS.tsv', header = TRUE, sep = "\t", quote = "",
+  require(plyr)
+metadata_gos<-read.delim(filename2, header = TRUE, sep = "\t", quote = "",
            dec = ".")
-
-#need to make sure these are characters for the following functions to work properly
+#need to make sure these are characters
 mgrastid=as.character(metadata_gos$MG.RAST.ID)
-#metadata.col<-"Location"
-location=as.character(metadata_gos[[metadata.col]])
-
+columninfo=as.character(metadata_gos[[metadata.col]])
 #add a new columns the abundance dataframe so that they can be identified by location 
-datamatrixname$metagenome_metadatacol<-mapvalues(datamatrixname$metagenome, from =mgrastid, to = location)   
+datamatrixname$metagenome_metadatacol<-mapvalues(datamatrixname$metagenome, from =mgrastid, to = columninfo)   
 return(datamatrixname)
 }
-
-globalocean_data_metadata<-metadata_readin_mgrast(datamatrixname = data_GOS, filename2 = 'data/metadata_MGRAST_GOS.tsv', metadata.col = "Location")
-
-
-#find how many pathways have information to plot
-proportionlevel1_pathwaynames<-levels(unique(factor(globalocean_data_metadata$level.1))) 
-
 ```
 
+##Extract the names of the level 1 categories
+I decided to make a function to extract the names of the level 1 functional categories instead of hard-coding them.  'Hard-coding' in this scenario would be using a list of names.  This can lead to unpredictable results in the future if the SEED Subsystems groupings ever change. 
 
 ```{r, echo=FALSE}
-  require(ggplot2)
-  ggplot(globalocean_data_metadata[globalocean_data_metadata$level.1==proportionlevel1_pathwaynames[1],],aes(level.2,relative_abundance_of_all_annotated_genes)) + geom_point(colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black")) + coord_flip() + ggtitle(paste(proportionlevel1_pathwaynames[1],"level.1 TESTINGJL"))
+level1_extraction<-function(mdatamatrix){
+level1_pathwaynames<-levels(unique(factor(mdatamatrix$level.1))) 
+}
 ```
-##Define plotting functions:
-Define two functions so that annotation can be plotted by the most broad category and by their environment
+
+##Plot the relative gene abundances for a user-specified level 1 category
+Here is the function to produce a single plot. ggplot2 is a popular R package for plotting with lots of documentations and tutorials online (http://docs.ggplot2.org/current/). We are subsetting the MG-rast data to the user-specified level1 category.  Then we are plotting the various level 2 categories nested within that level 1 category against the relative abundance.  All other things after that geom_point are plotting aesthetics. 
+
 ```{r}
-#plot all the functions of each level 1 category
 proportionplotting_level1 <- function(matrixname,i) {
   require(ggplot2); 
   outputplot=ggplot(matrixname[matrixname$level.1==i,],aes(level.2,relative_abundance_of_all_annotated_genes)) + geom_point(colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black")) + coord_flip() + ggtitle(paste(i,"level.1")); 
   return(outputplot)
   }
-
-proportionplotting_level1_byenvironment <- function(matrixname,environment) {
+```
+##Plot the relative gene abundances for a user-specified metadata category
+This is very similar to the previous function but we will specify what column in the metadata to use.
+```{r}
+proportionplotting_level1_bymetadata <- function(matrixname,metadata.col) {
   require(ggplot2); 
-  outputplot=ggplot(matrixname[which(matrixname$metagenomelocation==environment),],aes(level.1,relative_abundance_of_all_annotated_genes), fill=metagenometype) + geom_bar(stat="identity", position="dodge", aes(fill=metagenomelocation), colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black"),legend.position ="top") + scale_fill_manual(values=c("#FFFFFF","#a9a9a9")) + coord_flip() + ggtitle(paste(environment,"level.1")); 
+  outputplot=ggplot(matrixname[which(matrixname$metagenome_metadatacol ==metadata.col),],aes(level.1,relative_abundance_of_all_annotated_genes)) + geom_bar(stat="identity", position="dodge", colour="black") + theme(axis.text.x=element_text(angle=-90, size=8, colour="black"),legend.position ="top") + coord_flip() + ggtitle(paste(metadata.col,"level.1")); 
   return(outputplot)
   }
 ```
-##Output to PDF:
-Create a pdf with all the plots
-```{r, eval=FALSE}
-library(ggplot2)
 
+##Call the functions:
+All the previous chunks of codes defined our functions.  Now, we can use them.  If I ever wanted to change the input data file or the metadata category plotted, I would only need to change the following chunk of code. 
+```{r, eval=FALSE}
+data_GOS<-data_readin_mgrast('data/table_subsystemsMGRAST_GOS.tsv')
+globalocean_data_metadata<-metadata_readin_mgrast(datamatrixname = data_GOS, filename2 = 'data/metadata_MGRAST_GOS.tsv', metadata.col = "Location")
+proportionlevel1_pathwaynames<-level1_extraction(globalocean_data_metadata)
+proportionplotting_level1(globalocean_data_metadata,'Amino Acids and Derivatives')
+proportionplotting_level1_bymetadata(globalocean_data_metadata, 'Polynesia Archipelagos - Moorea, Cooks Bay')
+```
+
+##Create PDF of multiple plots
+To exhaustively plot your metagenome dataset, use the 'lapply' function.  We are looping this function over all the level1 pathways in our data set.  Then we are looping over all the locations from our data set.  Everything will be in pdfs in our working directory.
+```{r, eval=FALSE}
 pdf(file="bypathway.pdf", width=12) 
   lapply(X= proportionlevel1_pathwaynames, FUN= proportionplotting_level1, matrixname=data_subsystems_gos)
   dev.off()
